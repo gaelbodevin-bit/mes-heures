@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Mes heures</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#f5f5f4; --card:#ffffff; --ink:#1c1917; --muted:#78716c; --line:#e7e5e4;
+    --accent:#0f766e; --accent-soft:#ccfbf1; --danger:#b91c1c;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0c0a09; --card:#1c1917; --ink:#f5f5f4; --muted:#a8a29e; --line:#292524;
+           --accent:#2dd4bf; --accent-soft:#134e4a; --danger:#f87171; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+  main{max-width:520px;margin:0 auto;
+    padding:calc(16px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom))}
+  button{font:inherit;color:inherit;cursor:pointer}
+
+  /* En-tête semaine */
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+  .nav button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-size:20px}
+  .nav .title{text-align:center;flex:1}
+  .nav .title b{display:block;font-size:17px}
+  .nav .title small{color:var(--muted)}
+  #todayBtn{display:block;margin:-4px auto 12px;border:0;background:none;color:var(--accent);font-size:14px;padding:4px 8px}
+  #todayBtn[hidden]{display:none}
+
+  .total{background:var(--accent);color:#fff;border-radius:18px;padding:18px 20px;margin-bottom:14px}
+  @media (prefers-color-scheme: dark){ .total{color:#042f2e} }
+  .total small{opacity:.85;font-size:14px}
+  .total .big{font-size:40px;font-weight:700;letter-spacing:-1px;line-height:1.1}
+  .total .sub{font-size:14px;opacity:.85}
+
+  /* Jours */
+  .days{background:var(--card);border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+  .day{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border:0;border-top:1px solid var(--line);
+    background:none;text-align:left}
+  .day:first-child{border-top:0}
+  .day .d{width:46px;flex:none}
+  .day .d b{display:block;font-size:15px;text-transform:capitalize}
+  .day .d small{color:var(--muted)}
+  .day .info{flex:1;color:var(--muted);font-size:14px}
+  .day .h{font-weight:700;font-variant-numeric:tabular-nums}
+  .day.empty .h{color:var(--muted);font-weight:400}
+  .day.today .d b{color:var(--accent)}
+
+  /* Mois */
+  .month{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding:14px 16px;
+    background:var(--card);border:1px solid var(--line);border-radius:18px}
+  .month label{display:flex;align-items:center;gap:10px}
+  .month input{width:20px;height:20px;accent-color:var(--accent)}
+  .month .h{font-weight:700;font-variant-numeric:tabular-nums}
+
+  details{margin-top:24px;color:var(--muted);font-size:14px}
+  details summary{cursor:pointer}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 14px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  @media (prefers-color-scheme: dark){ .btn.primary{color:#042f2e} }
+  .btn.danger{color:var(--danger)}
+  #msg{margin-top:8px;min-height:1.2em}
+
+  /* Éditeur */
+  .sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+  .sheet[hidden]{display:none}
+  .panel{background:var(--card);width:100%;max-width:520px;border-radius:22px 22px 0 0;
+    padding:20px 18px calc(20px + env(safe-area-inset-bottom))}
+  .panel h2{margin:0 0 16px;font-size:18px}
+  .panel h2::first-letter{text-transform:uppercase}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+  .field input{width:100%;font:inherit;font-size:20px;padding:10px 12px;border-radius:12px;
+    border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+  .pause{margin-top:14px}
+  .pause .val{font-size:20px;font-weight:600;margin:2px 0 8px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chips button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 12px;font-size:14px}
+  .result{margin:16px 0;padding:12px 14px;border-radius:12px;background:var(--accent-soft);
+    display:flex;justify-content:space-between;align-items:center}
+  .result b{font-size:22px;font-variant-numeric:tabular-nums}
+  .actions{display:flex;gap:8px}
+  .actions .primary{flex:1}
+</style>
+</head>
+<body>
+<main>
+  <div class="nav">
+    <button id="prev" aria-label="Semaine précédente">‹</button>
+    <div class="title"><b id="wkTitle"></b><small id="wkNum"></small></div>
+    <button id="next" aria-label="Semaine suivante">›</button>
+  </div>
+  <button id="todayBtn">Revenir à cette semaine</button>
+
+  <div class="total">
+    <small>Total de la semaine</small>
+    <div class="big" id="wkTotal">0h00</div>
+    <div class="sub" id="wkSub"></div>
+  </div>
+
+  <div class="days" id="days"></div>
+
+  <div class="month">
+    <label><input type="checkbox" id="showMonth"> <span id="monthLabel">Total du mois</span></label>
+    <span class="h" id="monthTotal"></span>
+  </div>
+
+  <details>
+    <summary>Sauvegarde</summary>
+    <div class="row">
+      <button class="btn" id="exportBtn">Exporter</button>
+      <button class="btn" id="copyBtn">Copier</button>
+      <label class="btn">Importer<input type="file" id="importFile" accept="application/json,.json" hidden></label>
+    </div>
+    <div id="msg"></div>
+  </details>
+</main>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="edTitle">
+    <h2 id="edTitle"></h2>
+    <div class="grid">
+      <div class="field"><label for="inS">Arrivée</label><input type="time" id="inS"></div>
+      <div class="field"><label for="inE">Départ</label><input type="time" id="inE"></div>
+    </div>
+    <div class="pause">
+      <div class="field"><label>Pauses</label></div>
+      <div class="val" id="pauseVal">0h00</div>
+      <div class="chips">
+        <button data-p="-15">−15</button>
+        <button data-p="15">+15</button>
+        <button data-p="30">+30</button>
+        <button data-p="60">+1h</button>
+        <button data-p="0">Aucune</button>
+      </div>
+    </div>
+    <div class="result"><span>Travaillé</span><b id="edDur">0h00</b></div>
+    <div class="actions">
+      <button class="btn danger" id="delBtn">Effacer</button>
+      <button class="btn" id="cancelBtn">Annuler</button>
+      <button class="btn primary" id="saveBtn">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var KEY = 'mesheures.v1';
+  var st = { days:{}, showMonth:false, last:{ s:'09:00', e:'17:00', p:60 } };
+  try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); st.days = o.days||{}; st.showMonth = !!o.showMonth; if (o.last) st.last = o.last; } } catch(e){}
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} }
+
+  var $ = function(id){ return document.getElementById(id); };
+  var pad = function(n){ return String(n).padStart(2,'0'); };
+  var iso = function(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); };
+  var toMin = function(t){ var p = t.split(':'); return (+p[0])*60 + (+p[1]); };
+  var fmt = function(m){ m = Math.max(0, Math.round(m)); return Math.floor(m/60)+'h'+pad(m%60); };
+  var DAYS = ['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
+  var DAYS_L = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  var MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  var MONTHS_S = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+
+  // Durée travaillée : départ − arrivée − pauses (départ après minuit géré)
+  function dur(x){
+    if (!x || !x.s || !x.e) return 0;
+    var w = toMin(x.e) - toMin(x.s);
+    if (w <= 0) w += 1440;
+    return Math.max(0, w - (x.p||0));
+  }
+  function monday(d){ var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - (x.getDay()+6)%7); return x; }
+  function addDays(d,n){ var x = new Date(d); x.setDate(x.getDate()+n); return x; }
+  function isoWeek(d){
+    var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay()||7));
+    var y0 = new Date(Date.UTC(t.getUTCFullYear(),0,1));
+    return Math.ceil(((t - y0)/864e5 + 1)/7);
+  }
+
+  var wk = monday(new Date());
+
+  function render(){
+    var today = iso(new Date());
+    var end = addDays(wk,6);
+    $('wkTitle').textContent = wk.getMonth()===end.getMonth()
+      ? 'Du '+wk.getDate()+' au '+end.getDate()+' '+MONTHS_S[end.getMonth()]
+      : 'Du '+wk.getDate()+' '+MONTHS_S[wk.getMonth()]+' au '+end.getDate()+' '+MONTHS_S[end.getMonth()];
+    $('wkNum').textContent = 'Semaine '+isoWeek(wk)+' · '+end.getFullYear();
+    $('todayBtn').hidden = iso(monday(new Date())) === iso(wk);
+
+    var html = '', total = 0, n = 0;
+    for (var i=0;i<7;i++){
+      var d = addDays(wk,i), k = iso(d), x = st.days[k], m = dur(x);
+      total += m; if (x) n++;
+      html += '<button class="day'+(x?'':' empty')+(k===today?' today':'')+'" data-k="'+k+'">'
+        + '<span class="d"><b>'+DAYS[d.getDay()]+'</b><small>'+d.getDate()+'</small></span>'
+        + '<span class="info">'+(x ? x.s+' – '+x.e+(x.p ? ' · pause '+fmt(x.p) : '') : '')+'</span>'
+        + '<span class="h">'+(x ? fmt(m) : '—')+'</span></button>';
+    }
+    $('days').innerHTML = html;
+    $('wkTotal').textContent = fmt(total);
+    $('wkSub').textContent = n ? n+' jour'+(n>1?'s':'')+' travaillé'+(n>1?'s':'') : 'Aucun jour saisi';
+
+    // Mois : celui du jeudi de la semaine affichée
+    var th = addDays(wk,3), pre = th.getFullYear()+'-'+pad(th.getMonth()+1)+'-', mt = 0;
+    for (var key in st.days) if (key.indexOf(pre)===0) mt += dur(st.days[key]);
+    $('showMonth').checked = st.showMonth;
+    $('monthLabel').textContent = 'Total '+(/^[aeiou]/.test(MONTHS[th.getMonth()]) ? "d'" : 'de ')+MONTHS[th.getMonth()];
+    $('monthTotal').textContent = st.showMonth ? fmt(mt) : '';
+  }
+
+  // Éditeur
+  var cur = null, edit = null;
+  function updEd(){
+    $('pauseVal').textContent = fmt(edit.p);
+    $('edDur').textContent = (edit.s && edit.e) ? fmt(dur(edit)) : '—';
+  }
+  function openEd(k){
+    cur = k;
+    var x = st.days[k];
+    edit = x ? { s:x.s, e:x.e, p:x.p||0 } : { s:st.last.s, e:st.last.e, p:st.last.p };
+    var p = k.split('-'), d = new Date(+p[0], +p[1]-1, +p[2]);
+    $('edTitle').textContent = DAYS_L[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()];
+    $('inS').value = edit.s; $('inE').value = edit.e;
+    $('delBtn').style.visibility = x ? 'visible' : 'hidden';
+    updEd();
+    $('sheet').hidden = false;
+  }
+  function closeEd(){ $('sheet').hidden = true; cur = null; }
+
+  $('days').addEventListener('click', function(ev){ var b = ev.target.closest('.day'); if (b) openEd(b.dataset.k); });
+  $('inS').addEventListener('input', function(){ edit.s = this.value; updEd(); });
+  $('inE').addEventListener('input', function(){ edit.e = this.value; updEd(); });
+  document.querySelectorAll('.chips button').forEach(function(b){
+    b.addEventListener('click', function(){ var v = +b.dataset.p; edit.p = v===0 ? 0 : Math.max(0, edit.p + v); updEd(); });
+  });
+  $('saveBtn').addEventListener('click', function(){
+    if (!edit.s || !edit.e) return;
+    st.days[cur] = { s:edit.s, e:edit.e, p:edit.p };
+    st.last = { s:edit.s, e:edit.e, p:edit.p };
+    save(); closeEd(); render();
+  });
+  $('delBtn').addEventListener('click', function(){ delete st.days[cur]; save(); closeEd(); render(); });
+  $('cancelBtn').addEventListener('click', closeEd);
+  $('sheet').addEventListener('click', function(ev){ if (ev.target === this) closeEd(); });
+
+  $('prev').addEventListener('click', function(){ wk = addDays(wk,-7); render(); });
+  $('next').addEventListener('click', function(){ wk = addDays(wk,7); render(); });
+  $('todayBtn').addEventListener('click', function(){ wk = monday(new Date()); render(); });
+  $('showMonth').addEventListener('change', function(){ st.showMonth = this.checked; save(); render(); });
+
+  // Sauvegarde
+  function msg(t){ $('msg').textContent = t; }
+  function dump(){ return JSON.stringify({ app:'mes-heures', v:1, days:st.days }, null, 1); }
+  $('exportBtn').addEventListener('click', function(){
+    try {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([dump()], {type:'application/json'}));
+      a.download = 'mes-heures-'+iso(new Date())+'.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      msg('Fichier exporté.');
+    } catch(e){ msg("Export impossible ici, utilise « Copier »."); }
+  });
+  $('copyBtn').addEventListener('click', function(){
+    try { navigator.clipboard.writeText(dump()).then(function(){ msg('Données copiées.'); }, function(){ msg('Copie refusée.'); }); }
+    catch(e){ msg('Copie refusée.'); }
+  });
+  $('importFile').addEventListener('change', function(){
+    var f = this.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try {
+        var o = JSON.parse(r.result);
+        if (!o || typeof o.days !== 'object') throw 0;
+        for (var k in o.days) st.days[k] = o.days[k];
+        save(); render(); msg(Object.keys(o.days).length+' jours importés.');
+      } catch(e){ msg('Fichier invalide.'); }
+    };
+    r.readAsText(f); this.value = '';
+  });
+
+  render();
+
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    try { navigator.serviceWorker.register('sw.js').catch(function(){}); } catch(e){}
+  }
+})();
+</script>
+</body>
+</html>
