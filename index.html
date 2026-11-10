@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -9,32 +9,34 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
-  :root{
-    --bg:#f5f5f4; --card:#ffffff; --ink:#1c1917; --muted:#78716c; --line:#e7e5e4;
-    --accent:#0f766e; --accent-soft:#ccfbf1; --danger:#b91c1c;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{ --bg:#0c0a09; --card:#1c1917; --ink:#f5f5f4; --muted:#a8a29e; --line:#292524;
-           --accent:#2dd4bf; --accent-soft:#134e4a; --danger:#f87171; }
-  }
+  :root{ --accent:#0f766e; --on-accent:#ffffff; }
+  [data-theme="light"]{ --bg:#f5f5f4; --card:#ffffff; --ink:#1c1917; --muted:#78716c; --line:#e7e5e4; --danger:#b91c1c; color-scheme:light; }
+  [data-theme="dark"]{ --bg:#0c0a09; --card:#1c1917; --ink:#f5f5f4; --muted:#a8a29e; --line:#292524; --danger:#f87171; color-scheme:dark; }
+  :root{ --accent-soft:color-mix(in srgb, var(--accent) 20%, var(--card)); }
+
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--bg);color:var(--ink);
     font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
   main{max-width:520px;margin:0 auto;
-    padding:calc(16px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom))}
+    padding:calc(12px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom))}
   button{font:inherit;color:inherit;cursor:pointer}
+
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .top h1{font-size:20px;margin:0}
+  .icon-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);
+    display:flex;align-items:center;justify-content:center;padding:0}
+  .icon-btn svg{width:22px;height:22px;stroke:var(--ink)}
 
   /* En-tête semaine */
   .nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-  .nav button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-size:20px}
+  .nav .icon-btn{font-size:20px}
   .nav .title{text-align:center;flex:1}
   .nav .title b{display:block;font-size:17px}
   .nav .title small{color:var(--muted)}
   #todayBtn{display:block;margin:-4px auto 12px;border:0;background:none;color:var(--accent);font-size:14px;padding:4px 8px}
   #todayBtn[hidden]{display:none}
 
-  .total{background:var(--accent);color:#fff;border-radius:18px;padding:18px 20px;margin-bottom:14px}
-  @media (prefers-color-scheme: dark){ .total{color:#042f2e} }
+  .total{background:var(--accent);color:var(--on-accent);border-radius:18px;padding:18px 20px;margin-bottom:14px}
   .total small{opacity:.85;font-size:14px}
   .total .big{font-size:40px;font-weight:700;letter-spacing:-1px;line-height:1.1}
   .total .sub{font-size:14px;opacity:.85}
@@ -59,43 +61,61 @@
   .month input{width:20px;height:20px;accent-color:var(--accent)}
   .month .h{font-weight:700;font-variant-numeric:tabular-nums}
 
-  details{margin-top:24px;color:var(--muted);font-size:14px}
-  details summary{cursor:pointer}
-  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
   .btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 14px}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-  @media (prefers-color-scheme: dark){ .btn.primary{color:#042f2e} }
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
   .btn.danger{color:var(--danger)}
-  #msg{margin-top:8px;min-height:1.2em}
 
-  /* Éditeur */
+  /* Feuilles (éditeur + paramètres) */
   .sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
   .sheet[hidden]{display:none}
-  .panel{background:var(--card);width:100%;max-width:520px;border-radius:22px 22px 0 0;
+  .panel{background:var(--card);width:100%;max-width:520px;border-radius:22px 22px 0 0;max-height:92vh;overflow:auto;
     padding:20px 18px calc(20px + env(safe-area-inset-bottom))}
   .panel h2{margin:0 0 16px;font-size:18px}
   .panel h2::first-letter{text-transform:uppercase}
+  .panel h3{margin:18px 0 8px;font-size:14px;color:var(--muted);font-weight:600}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
   .field input{width:100%;font:inherit;font-size:20px;padding:10px 12px;border-radius:12px;
     border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:-1px}
   .pause{margin-top:14px}
-  .pause .val{font-size:20px;font-weight:600;margin:2px 0 8px}
-  .chips{display:flex;gap:6px;flex-wrap:wrap}
-  .chips button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 12px;font-size:14px}
+  .pause .hm{display:flex;align-items:center;gap:8px}
+  .pause .hm input{width:84px;text-align:center}
+  .pause .hm span{color:var(--muted);font-size:18px}
   .result{margin:16px 0;padding:12px 14px;border-radius:12px;background:var(--accent-soft);
     display:flex;justify-content:space-between;align-items:center}
   .result b{font-size:22px;font-variant-numeric:tabular-nums}
   .actions{display:flex;gap:8px}
   .actions .primary{flex:1}
+
+  /* Paramètres */
+  .swatches{display:flex;flex-wrap:wrap;gap:10px}
+  .sw{width:40px;height:40px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1px var(--line);padding:0}
+  .sw.on{box-shadow:0 0 0 2px var(--ink)}
+  .custom{position:relative;overflow:hidden;background:conic-gradient(#ef4444,#f59e0b,#22c55e,#06b6d4,#6366f1,#ec4899,#ef4444)}
+  .custom input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+  .seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:3px}
+  .seg button{flex:1;border:0;background:none;border-radius:9px;padding:9px 6px;font-size:15px}
+  .seg button.on{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.15);font-weight:600}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  #msg{margin-top:8px;min-height:1.2em;color:var(--muted);font-size:14px}
+  .close-row{margin-top:20px}
+  .close-row .btn{width:100%}
 </style>
 </head>
 <body>
 <main>
+  <div class="top">
+    <h1>Mes heures</h1>
+    <button class="icon-btn" id="settingsBtn" aria-label="Paramètres">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+
   <div class="nav">
-    <button id="prev" aria-label="Semaine précédente">‹</button>
+    <button class="icon-btn" id="prev" aria-label="Semaine précédente">‹</button>
     <div class="title"><b id="wkTitle"></b><small id="wkNum"></small></div>
-    <button id="next" aria-label="Semaine suivante">›</button>
+    <button class="icon-btn" id="next" aria-label="Semaine suivante">›</button>
   </div>
   <button id="todayBtn">Revenir à cette semaine</button>
 
@@ -111,18 +131,9 @@
     <label><input type="checkbox" id="showMonth"> <span id="monthLabel">Total du mois</span></label>
     <span class="h" id="monthTotal"></span>
   </div>
-
-  <details>
-    <summary>Sauvegarde</summary>
-    <div class="row">
-      <button class="btn" id="exportBtn">Exporter</button>
-      <button class="btn" id="copyBtn">Copier</button>
-      <label class="btn">Importer<input type="file" id="importFile" accept="application/json,.json" hidden></label>
-    </div>
-    <div id="msg"></div>
-  </details>
 </main>
 
+<!-- Éditeur d'un jour -->
 <div class="sheet" id="sheet" hidden>
   <div class="panel" role="dialog" aria-modal="true" aria-labelledby="edTitle">
     <h2 id="edTitle"></h2>
@@ -130,15 +141,13 @@
       <div class="field"><label for="inS">Arrivée</label><input type="time" id="inS"></div>
       <div class="field"><label for="inE">Départ</label><input type="time" id="inE"></div>
     </div>
-    <div class="pause">
-      <div class="field"><label>Pauses</label></div>
-      <div class="val" id="pauseVal">0h00</div>
-      <div class="chips">
-        <button data-p="-15">−15</button>
-        <button data-p="15">+15</button>
-        <button data-p="30">+30</button>
-        <button data-p="60">+1h</button>
-        <button data-p="0">Aucune</button>
+    <div class="pause field">
+      <label for="inPH">Pauses</label>
+      <div class="hm">
+        <input type="number" id="inPH" inputmode="numeric" min="0" max="23" step="1" placeholder="0">
+        <span>h</span>
+        <input type="number" id="inPM" inputmode="numeric" min="0" max="59" step="1" placeholder="00">
+        <span>min</span>
       </div>
     </div>
     <div class="result"><span>Travaillé</span><b id="edDur">0h00</b></div>
@@ -150,11 +159,48 @@
   </div>
 </div>
 
+<!-- Paramètres -->
+<div class="sheet" id="settings" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <h2 id="setTitle">Paramètres</h2>
+
+    <h3>Couleur principale</h3>
+    <div class="swatches" id="swatches"></div>
+
+    <h3>Thème</h3>
+    <div class="seg" id="themeSeg">
+      <button data-t="auto">Auto</button>
+      <button data-t="light">Clair</button>
+      <button data-t="dark">Sombre</button>
+    </div>
+
+    <h3>Sauvegarde</h3>
+    <div class="row">
+      <button class="btn" id="exportBtn">Exporter</button>
+      <button class="btn" id="copyBtn">Copier</button>
+      <label class="btn">Importer<input type="file" id="importFile" accept="application/json,.json" hidden></label>
+    </div>
+    <div id="msg"></div>
+
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="resetColors">Couleurs par défaut</button>
+    </div>
+    <div class="close-row"><button class="btn primary" id="closeSettings">Fermer</button></div>
+  </div>
+</div>
+
 <script>
 (function(){
   var KEY = 'mesheures.v1';
-  var st = { days:{}, showMonth:false, last:{ s:'09:00', e:'17:00', p:60 } };
-  try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); st.days = o.days||{}; st.showMonth = !!o.showMonth; if (o.last) st.last = o.last; } } catch(e){}
+  var DEF_ACCENT = '#0f766e';
+  var PRESETS = ['#0f766e','#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#ca8a04','#16a34a','#475569'];
+  var st = { days:{}, showMonth:false, last:{ s:'09:00', e:'17:00', p:60 }, accent:DEF_ACCENT, theme:'auto' };
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) { var o = JSON.parse(raw);
+      st.days = o.days||{}; st.showMonth = !!o.showMonth; if (o.last) st.last = o.last;
+      if (o.accent) st.accent = o.accent; if (o.theme) st.theme = o.theme; }
+  } catch(e){}
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} }
 
   var $ = function(id){ return document.getElementById(id); };
@@ -167,6 +213,55 @@
   var MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
   var MONTHS_S = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
 
+  /* ---------- Apparence ---------- */
+  var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  function lum(hex){
+    var c = hex.replace('#',''); if (c.length===3) c = c.split('').map(function(x){return x+x;}).join('');
+    var rgb = [0,2,4].map(function(i){ var v = parseInt(c.substr(i,2),16)/255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4); });
+    return 0.2126*rgb[0] + 0.7152*rgb[1] + 0.0722*rgb[2];
+  }
+  function applyLook(){
+    var dark = st.theme==='dark' || (st.theme==='auto' && mq && mq.matches);
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    var r = document.documentElement.style;
+    r.setProperty('--accent', st.accent);
+    r.setProperty('--on-accent', lum(st.accent) > 0.45 ? '#111111' : '#ffffff');
+    var m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = st.accent;
+  }
+  if (mq) { try { mq.addEventListener('change', applyLook); } catch(e){ try { mq.addListener(applyLook); } catch(_){} } }
+
+  function renderSettings(){
+    var html = '';
+    PRESETS.forEach(function(c){
+      html += '<button class="sw'+(st.accent.toLowerCase()===c?' on':'')+'" data-c="'+c+'" style="background:'+c+'" aria-label="Couleur '+c+'"></button>';
+    });
+    var custom = PRESETS.indexOf(st.accent.toLowerCase())<0;
+    html += '<label class="sw custom'+(custom?' on':'')+'" aria-label="Couleur personnalisée"'
+         + (custom ? ' style="background:'+st.accent+'"' : '')
+         + '><input type="color" id="customColor" value="'+st.accent+'"></label>';
+    $('swatches').innerHTML = html;
+    document.querySelectorAll('#themeSeg button').forEach(function(b){ b.classList.toggle('on', b.dataset.t===st.theme); });
+  }
+  $('swatches').addEventListener('click', function(ev){
+    var b = ev.target.closest('button.sw'); if (!b) return;
+    st.accent = b.dataset.c; save(); applyLook(); renderSettings();
+  });
+  $('swatches').addEventListener('input', function(ev){
+    if (ev.target.id !== 'customColor') return;
+    st.accent = ev.target.value; save(); applyLook();
+    var l = ev.target.parentNode; l.style.background = st.accent;
+  });
+  $('swatches').addEventListener('change', function(ev){ if (ev.target.id === 'customColor') renderSettings(); });
+  $('themeSeg').addEventListener('click', function(ev){
+    var b = ev.target.closest('button'); if (!b) return;
+    st.theme = b.dataset.t; save(); applyLook(); renderSettings();
+  });
+  $('resetColors').addEventListener('click', function(){ st.accent = DEF_ACCENT; st.theme = 'auto'; save(); applyLook(); renderSettings(); });
+  $('settingsBtn').addEventListener('click', function(){ renderSettings(); $('msg').textContent=''; $('settings').hidden = false; });
+  $('closeSettings').addEventListener('click', function(){ $('settings').hidden = true; });
+  $('settings').addEventListener('click', function(ev){ if (ev.target === this) this.hidden = true; });
+
+  /* ---------- Calculs ---------- */
   // Durée travaillée : départ − arrivée − pauses (départ après minuit géré)
   function dur(x){
     if (!x || !x.s || !x.e) return 0;
@@ -215,12 +310,18 @@
     $('monthTotal').textContent = st.showMonth ? fmt(mt) : '';
   }
 
-  // Éditeur
+  /* ---------- Éditeur ---------- */
   var cur = null, edit = null;
-  function updEd(){
-    $('pauseVal').textContent = fmt(edit.p);
-    $('edDur').textContent = (edit.s && edit.e) ? fmt(dur(edit)) : '—';
+  function readPause(){
+    var h = parseInt($('inPH').value,10), m = parseInt($('inPM').value,10);
+    h = isNaN(h) ? 0 : Math.max(0,h); m = isNaN(m) ? 0 : Math.max(0,m);
+    return h*60 + m;
   }
+  function writePause(p){
+    $('inPH').value = p ? Math.floor(p/60) : '';
+    $('inPM').value = p ? pad(p%60) : '';
+  }
+  function updEd(){ $('edDur').textContent = (edit.s && edit.e) ? fmt(dur(edit)) : '—'; }
   function openEd(k){
     cur = k;
     var x = st.days[k];
@@ -228,6 +329,7 @@
     var p = k.split('-'), d = new Date(+p[0], +p[1]-1, +p[2]);
     $('edTitle').textContent = DAYS_L[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()];
     $('inS').value = edit.s; $('inE').value = edit.e;
+    writePause(edit.p);
     $('delBtn').style.visibility = x ? 'visible' : 'hidden';
     updEd();
     $('sheet').hidden = false;
@@ -237,11 +339,15 @@
   $('days').addEventListener('click', function(ev){ var b = ev.target.closest('.day'); if (b) openEd(b.dataset.k); });
   $('inS').addEventListener('input', function(){ edit.s = this.value; updEd(); });
   $('inE').addEventListener('input', function(){ edit.e = this.value; updEd(); });
-  document.querySelectorAll('.chips button').forEach(function(b){
-    b.addEventListener('click', function(){ var v = +b.dataset.p; edit.p = v===0 ? 0 : Math.max(0, edit.p + v); updEd(); });
+  ['inPH','inPM'].forEach(function(id){
+    $(id).addEventListener('input', function(){ edit.p = readPause(); updEd(); });
+    $(id).addEventListener('focus', function(){ try { this.select(); } catch(e){} });
   });
+  // 75 min → 1 h 15 quand on quitte le champ
+  $('inPM').addEventListener('blur', function(){ writePause(readPause()); });
   $('saveBtn').addEventListener('click', function(){
     if (!edit.s || !edit.e) return;
+    edit.p = readPause();
     st.days[cur] = { s:edit.s, e:edit.e, p:edit.p };
     st.last = { s:edit.s, e:edit.e, p:edit.p };
     save(); closeEd(); render();
@@ -255,7 +361,7 @@
   $('todayBtn').addEventListener('click', function(){ wk = monday(new Date()); render(); });
   $('showMonth').addEventListener('change', function(){ st.showMonth = this.checked; save(); render(); });
 
-  // Sauvegarde
+  /* ---------- Sauvegarde ---------- */
   function msg(t){ $('msg').textContent = t; }
   function dump(){ return JSON.stringify({ app:'mes-heures', v:1, days:st.days }, null, 1); }
   $('exportBtn').addEventListener('click', function(){
@@ -285,6 +391,7 @@
     r.readAsText(f); this.value = '';
   });
 
+  applyLook();
   render();
 
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
