@@ -1,5 +1,5 @@
 // Cache hors-ligne minimal. Change VERSION à chaque mise à jour pour forcer le rafraîchissement.
-const VERSION = 'mes-heures-v3';
+const VERSION = 'mes-heures-v4';
 const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
